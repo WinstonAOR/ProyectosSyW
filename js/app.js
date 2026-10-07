@@ -343,3 +343,20 @@ function inicializarPullToRefresh() {
         }
     });
 }
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+        reg.addEventListener('updatefound', () => {
+            const nuevoWorker = reg.installing;
+            nuevoWorker.addEventListener('statechange', () => {
+                if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Hay una nueva versión en GitHub Pages
+                    mostrarToast("✨ ¡Nueva versión disponible! Actualizando...", "info");
+                    setTimeout(() => {
+                        window.location.reload(); // Recarga automática limpia
+                    }, 1500);
+                }
+            });
+        });
+    });
+}
