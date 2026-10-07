@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Metas SyW 🐷</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Archivo de Estilos Externo -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-4">
+
+    <!-- CONTENEDOR TOAST (Mensajes de Estado / Alertas flotantes) -->
+    <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-sm"></div>
+
+    <!-- CONTENEDOR LOGIN -->
+    <div id="pantallaLogin" class="w-full sm:max-w-md bg-slate-950 min-h-screen sm:min-h-[850px] sm:rounded-[40px] sm:border-8 sm:border-slate-800 shadow-2xl flex flex-col justify-center items-center p-8 relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 text-9xl opacity-10 animate-pulse">🐷</div>
+        <div class="text-center space-y-3 mb-8 z-10">
+            <span class="text-6xl">🐷</span>
+            <h1 class="text-3xl font-black text-white">Metas SyW</h1>
+            <p class="text-sm text-slate-400">Selecciona quién va a entrar a ahorrar</p>
+        </div>
+
+        <div class="w-full space-y-4 z-10">
+            <button onclick="iniciarSesion('Winston', '👨‍💻')" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-95 group">
+                <span class="text-3xl bg-pink-500/10 p-3 rounded-xl group-hover:scale-110 transition-transform">👨‍💻</span>
+                <div class="text-left">
+                    <h3 class="font-bold text-white text-lg">Winston</h3>
+                    <p class="text-xs text-slate-400">Analista de Programador II</p>
+                </div>
+            </button>
+
+            <button onclick="iniciarSesion('Mi Novia', '💖')" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-95 group">
+                <span class="text-3xl bg-pink-500/10 p-3 rounded-xl group-hover:scale-110 transition-transform">💖</span>
+                <div class="text-left">
+                    <h3 class="font-bold text-white text-lg">Mi Novia</h3>
+                    <p class="text-xs text-slate-400">Co-ahorradora oficial</p>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <div id="pantallaApp" class="w-full sm:max-w-md bg-slate-950 min-h-screen sm:min-h-[850px] sm:rounded-[40px] sm:border-8 sm:border-slate-800 shadow-2xl flex flex-col justify-between relative overflow-hidden hidden">
+
+        <!-- Indicador de Pull to Refresh Animado -->
+        <div id="pullIndicator" class="absolute top-0 left-0 right-0 h-16 flex items-center justify-center bg-slate-900/90 backdrop-blur-md z-30 transition-transform duration-300 -translate-y-full border-b border-slate-800">
+            <div class="flex items-center gap-2 text-pink-400 text-xs font-bold">
+                <svg id="refreshSpinner" class="animate-spin h-4 w-4 text-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Sincronizando alcancía...</span>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="p-6 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex justify-between items-center sticky top-0 z-20">
+            <div>
+                <h1 class="text-xl font-extrabold text-pink-500 flex items-center gap-2">
+                    <span>🐷</span> Metas SyW
+                </h1>
+                <p id="txtUsuarioLogueado" class="text-xs text-slate-400">Conectado como: --</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="forzarSincronizacion()" title="Actualizar datos" class="bg-slate-800 hover:bg-slate-700 text-pink-400 p-2 rounded-full text-xs font-bold transition-all active:scale-90">
+                    🔄
+                </button>
+                <button onclick="cerrarSesion()" title="Cerrar sesión" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-full text-xs font-bold transition-all">
+                    Salir 🚪
+                </button>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main id="mainScrollContainer" class="p-6 flex-1 overflow-y-auto space-y-6 pb-24 relative">
+            
+            <!-- Tarjeta Principal Activa (Carrusel / Selector de Plan en Pantalla) -->
+            <div class="bg-gradient-to-br from-pink-600 to-rose-700 p-6 rounded-3xl shadow-lg relative overflow-hidden space-y-4">
+                <div class="absolute -right-6 -bottom-6 text-8xl opacity-10">🐷</div>
+                
+                <!-- Selector de Plan Activo con Flecha Desplegable -->
+                <div class="flex justify-between items-center bg-black/20 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs">🎯</span>
+                        <select id="selectPlanActivo" onchange="cambiarPlanActivo(this.value)" class="bg-transparent text-white font-bold text-xs outline-none cursor-pointer w-full">
+                            <!-- Se llena dinámicamente -->
+                        </select>
+                    </div>
+                    <button onclick="abrirModalMeta()" class="bg-white/20 hover:bg-white/30 text-white p-1 rounded-xl text-[10px] font-bold px-2.5 transition-all">
+                        + Nueva Meta
+                    </button>
+                </div>
+
+                <!-- Saldo y Progreso de la Meta Activa -->
+                <div>
+                    <p class="text-pink-100 text-xs font-semibold uppercase tracking-wider">Ahorro en este Plan</p>
+                    <h2 id="txtSaldoMetaActiva" class="text-4xl font-black text-white mt-1 mb-3">$0.00</h2>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium text-pink-100">
+                            <span>Meta Objetivo: <strong id="txtMetaMonto">$0</strong></span>
+                            <span id="txtPorcentaje">0%</span>
+                        </div>
+                        <div class="w-full bg-black/20 rounded-full h-3 overflow-hidden p-0.5">
+                            <div id="barraProgreso" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Rápida (Afectan directamente al plan activo en pantalla) -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="abrirModalMovimiento('deposito')" class="bg-white text-pink-700 hover:bg-pink-50 font-extrabold py-3 px-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95">
+                        <span>➕</span> Depositar
+                    </button>
+                    <button onclick="abrirModalMovimiento('retiro')" class="bg-black/30 hover:bg-black/40 backdrop-blur-md text-white font-extrabold py-3 px-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                        <span>➖</span> Retirar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Historial de Movimientos del Plan Activo -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Movimientos de este Plan</h3>
+                    <span id="txtNombrePlanHistorial" class="text-xs text-pink-400 font-semibold">--</span>
+                </div>
+                <div id="listaMovimientos" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 text-center py-4">Cargando movimientos...</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Modal de Depósito / Retiro (Ya no requiere elegir meta, toma la de la pantalla) -->
+        <div id="modalMovimiento" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+            <div class="bg-slate-900 w-full sm:max-w-sm rounded-t-[30px] sm:rounded-3xl p-6 border border-slate-800 space-y-4 animate-in fade-in slide-in-from-bottom duration-300">
+                <h3 id="tituloModalMov" class="text-lg font-bold text-white">Nuevo Movimiento</h3>
+                <p id="txtSubtituloModalMeta" class="text-xs text-pink-400 font-medium -mt-2">Plan: --</p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Monto ($)</label>
+                        <input type="number" id="inputMonto" placeholder="Ej. 15000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Motivo / Descripción</label>
+                        <input type="text" id="inputMotivo" placeholder="Ej. Ahorro quincenal" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-pink-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="cerrarModalMovimiento()" class="bg-slate-800 text-slate-300 font-bold py-3 rounded-xl hover:bg-slate-700 text-xs">Cancelar</button>
+                    <button onclick="ejecutarMovimiento()" class="bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-500 shadow-lg shadow-pink-900/40 text-xs">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para Crear Nueva Meta -->
+        <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+            <div class="bg-slate-900 w-full sm:max-w-sm rounded-t-[30px] sm:rounded-3xl p-6 border border-slate-800 space-y-4 animate-in fade-in slide-in-from-bottom duration-300">
+                <h3 class="text-lg font-bold text-white">✨ Crear Nueva Meta de Ahorro</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Nombre de la Meta</label>
+                        <input type="text" id="inputTituloMeta" placeholder="Ej. Viaje a Japón 2027" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Monto Objetivo ($)</label>
+                        <input type="number" id="inputMontoMeta" placeholder="Ej. 1000000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="cerrarModalMeta()" class="bg-slate-800 text-slate-300 font-bold py-3 rounded-xl hover:bg-slate-700 text-xs">Cancelar</button>
+                    <button onclick="guardarNuevaMeta()" class="bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-500 shadow-lg shadow-pink-900/40 text-xs">Crear Meta</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Archivo JavaScript Externo (Módulo) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
