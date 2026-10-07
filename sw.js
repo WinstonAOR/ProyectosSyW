@@ -11,7 +11,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
 });
 
-const CACHE_NAME = 'proyectos_syw-v1.1'; // Cambia la versión 'v' si haces cambios grandes
+const CACHE_NAME = 'proyectos_syw-v1.1.1'; // Cambia la versión 'v' si haces cambios grandes
 
 self.addEventListener('install', (e) => {
   self.skipWaiting(); // Fuerza a que el nuevo service worker tome el control de inmediato
