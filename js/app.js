@@ -3,12 +3,12 @@ import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "ht
 
 // ⚠️ PEGA AQUÍ TUS CREDENCIALES DE FIREBASE
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "tu-proyecto.firebaseapp.com",
-    projectId: "tu-proyecto",
-    storageBucket: "tu-proyecto.appspot.com",
-    messagingSenderId: "TU_SENDER",
-    appId: "TU_APP_ID"
+    apiKey: "AIzaSyAXcZGumE0WIbX0T34zTWM4wdC_SQ-ydW0",
+    authDomain: "proyectosenparejasyw.firebaseapp.com",
+    projectId: "proyectosenparejasyw",
+    storageBucket: "proyectosenparejasyw.firebasestorage.app",
+    messagingSenderId: "213562957041",
+    appId: "1:213562957041:web:60c52bb7712ea06d6b9d50"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -16,7 +16,17 @@ const db = getFirestore(app);
 
 let tipoActualModal = 'deposito';
 let cacheMetas = [];
-let metaSeleccionadaId = null; // ID del plan que está activo en pantalla actualmente
+let metaSeleccionadaId = null;
+let primeraCargaMovimientos = true; // Controla que no suene el audio al cargar la app por primera vez
+
+// --- REPRODUCIR SONIDO DE MONEDA ---
+function reproducirSonidoMoneda() {
+    const audio = document.getElementById('audioMoneda');
+    if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log("Audio prevenido por el navegador: ", e));
+    }
+}
 
 // --- SISTEMA DE NOTIFICACIONES TOAST ---
 function mostrarToast(mensaje, tipo = 'success') {
@@ -28,7 +38,7 @@ function mostrarToast(mensaje, tipo = 'success') {
                    'bg-slate-800/90 border-slate-700 text-slate-200';
 
     toast.className = `toast-item backdrop-blur-md px-4 py-3 rounded-2xl border shadow-xl text-xs font-bold flex items-center justify-between gap-3 w-full ${bgColors}`;
-    let icono = tipo === 'success' ? '✨' : tipo === 'error' ? '⚠️' : 'ℹ️';
+    let icono = tipo === 'success' ? '🪙' : tipo === 'error' ? '⚠️' : 'ℹ️';
     toast.innerHTML = `<div class="flex items-center gap-2"><span>${icono}</span><span>${mensaje}</span></div>`;
 
     container.appendChild(toast);
@@ -37,7 +47,7 @@ function mostrarToast(mensaje, tipo = 'success') {
         toast.style.transform = 'translateY(-10px)';
         toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 4000);
 }
 
 // --- GESTIÓN DE SESIÓN ---
@@ -80,7 +90,6 @@ function verificarSesion() {
 // --- CAMBIO DE PLAN ACTIVO EN PANTALLA ---
 window.cambiarPlanActivo = (metaId) => {
     metaSeleccionadaId = metaId;
-    // Forzar actualización visual repintando con los datos en caché
     actualizarInterfazConDatos();
 };
 
@@ -112,7 +121,7 @@ window.guardarNuevaMeta = async () => {
             activo: true,
             creadoEn: new Date().toISOString()
         });
-        metaSeleccionadaId = docRef.id; // Seleccionar la nueva meta automáticamente
+        metaSeleccionadaId = docRef.id;
         cerrarModalMeta();
         mostrarToast('¡Meta creada con éxito! 🎉');
     } catch (e) {
@@ -162,7 +171,7 @@ window.ejecutarMovimiento = async () => {
     try {
         mostrarToast('Guardando movimiento...', 'info');
         await addDoc(collection(db, "movimientos"), {
-            metaId: metaSeleccionadaId, // Toma automáticamente el plan visible en pantalla
+            metaId: metaSeleccionadaId,
             usuario: usuarioActual,
             tipo: tipoActualModal,
             monto: monto,
@@ -170,7 +179,6 @@ window.ejecutarMovimiento = async () => {
             fecha: new Date().toISOString()
         });
         cerrarModalMovimiento();
-        mostrarToast(`¡${tipoActualModal === 'deposito' ? 'Depósito' : 'Retiro'} registrado con éxito! 🚀`);
     } catch (e) {
         console.error("Error al guardar movimiento: ", e);
         mostrarToast('Error al conectar con la base de datos', 'error');
@@ -192,7 +200,7 @@ function escucharDatosEnVivo() {
         snapshotMetasGlobal = metas;
 
         if (metas.length > 0 && (!metaSeleccionadaId || !metas.some(m => m.id === metaSeleccionadaId))) {
-            metaSeleccionadaId = metas[0].id; // Seleccionar la primera por defecto si no hay ninguna activa
+            metaSeleccionadaId = metas[0].id;
         }
 
         actualizarInterfazConDatos();
@@ -204,7 +212,19 @@ function escucharDatosEnVivo() {
         snapshotMov.forEach((doc) => {
             movimientos.push(doc.data());
         });
+
+        // Detectar si entró un movimiento NUEVO en tiempo real (excluyendo la carga inicial)
+        if (!primeraCargaMovimientos && snapshotMovsGlobal.length > 0 && movimientos.length > snapshotMovsGlobal.length) {
+            const ultimoMov = movimientos[0]; // El más reciente
+            const metaObj = cacheMetas.find(m => m.id === ultimoMov.metaId);
+            const nombreMeta = metaObj ? metaObj.titulo : 'alcancía';
+            
+            reproducirSonidoMoneda();
+            mostrarToast(`🪙 ¡${ultimoMov.usuario} hizo un ${ultimoMov.tipo} de $${ultimoMov.monto.toLocaleString()} en "${nombreMeta}"!`);
+        }
+
         snapshotMovsGlobal = movimientos;
+        primeraCargaMovimientos = false;
 
         actualizarInterfazConDatos();
     });
@@ -226,16 +246,13 @@ function actualizarInterfazConDatos() {
         return;
     }
 
-    // Llenar el desplegable con las metas disponibles
     selectPlan.innerHTML = metas.map(m => `
         <option value="${m.id}" ${m.id === metaSeleccionadaId ? 'selected' : ''}>${m.titulo}</option>
     `).join('');
 
-    // Obtener la meta activa actualmente en pantalla
     const metaActiva = metas.find(m => m.id === metaSeleccionadaId) || metas[0];
     metaSeleccionadaId = metaActiva.id;
 
-    // Calcular saldo actual para esta meta específica
     let saldoActualMeta = 0;
     movimientos.forEach(m => {
         if (m.metaId === metaActiva.id) {
@@ -247,14 +264,12 @@ function actualizarInterfazConDatos() {
     let porcentaje = Math.min(Math.round((saldoActualMeta / metaActiva.metaMonto) * 100), 100);
     if (porcentaje < 0) porcentaje = 0;
 
-    // Actualizar tarjeta principal
     document.getElementById('txtSaldoMetaActiva').innerText = `$${saldoActualMeta.toLocaleString()}`;
     document.getElementById('txtMetaMonto').innerText = `$${metaActiva.metaMonto.toLocaleString()}`;
     document.getElementById('txtPorcentaje').innerText = `${porcentaje}%`;
     document.getElementById('barraProgreso').style.width = `${porcentaje}%`;
     document.getElementById('txtNombrePlanHistorial').innerText = metaActiva.titulo;
 
-    // Filtrar y renderizar movimientos de la meta activa
     const movimientosDelPlan = movimientos.filter(m => m.metaId === metaActiva.id);
     const contenedorMov = document.getElementById('listaMovimientos');
 

@@ -12,6 +12,9 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-4">
 
+    <!-- AUDIO OCULTO PARA EFECTO DE MONEDA/CAJA REGISTRADORA -->
+    <audio id="audioMoneda" src="https://cdn.freesound.org/previews/515/515678_6142169-lq.mp3" preload="auto"></audio>
+
     <!-- CONTENEDOR TOAST (Mensajes de Estado / Alertas flotantes) -->
     <div id="toastContainer" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-sm"></div>
 
@@ -33,10 +36,10 @@
                 </div>
             </button>
 
-            <button onclick="iniciarSesion('Mi Novia', '💖')" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-95 group">
+            <button onclick="iniciarSesion('Susan', '💖')" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-95 group">
                 <span class="text-3xl bg-pink-500/10 p-3 rounded-xl group-hover:scale-110 transition-transform">💖</span>
                 <div class="text-left">
-                    <h3 class="font-bold text-white text-lg">Mi Novia</h3>
+                    <h3 class="font-bold text-white text-lg">Susan</h3>
                     <p class="text-xs text-slate-400">Co-ahorradora oficial</p>
                 </div>
             </button>
@@ -78,7 +81,7 @@
         <!-- Contenido Principal -->
         <main id="mainScrollContainer" class="p-6 flex-1 overflow-y-auto space-y-6 pb-24 relative">
             
-            <!-- Tarjeta Principal Activa (Carrusel / Selector de Plan en Pantalla) -->
+            <!-- Tarjeta Principal Activa -->
             <div class="bg-gradient-to-br from-pink-600 to-rose-700 p-6 rounded-3xl shadow-lg relative overflow-hidden space-y-4">
                 <div class="absolute -right-6 -bottom-6 text-8xl opacity-10">🐷</div>
                 
@@ -111,7 +114,7 @@
                     </div>
                 </div>
 
-                <!-- Botones de Acción Rápida (Afectan directamente al plan activo en pantalla) -->
+                <!-- Botones de Acción Rápida -->
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="abrirModalMovimiento('deposito')" class="bg-white text-pink-700 hover:bg-pink-50 font-extrabold py-3 px-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95">
                         <span>➕</span> Depositar
@@ -135,7 +138,7 @@
 
         </main>
 
-        <!-- Modal de Depósito / Retiro (Ya no requiere elegir meta, toma la de la pantalla) -->
+        <!-- Modal de Depósito / Retiro -->
         <div id="modalMovimiento" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
             <div class="bg-slate-900 w-full sm:max-w-sm rounded-t-[30px] sm:rounded-3xl p-6 border border-slate-800 space-y-4 animate-in fade-in slide-in-from-bottom duration-300">
                 <h3 id="tituloModalMov" class="text-lg font-bold text-white">Nuevo Movimiento</h3>
