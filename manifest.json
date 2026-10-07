@@ -1,0 +1,16 @@
+{
+  "name": "Proyectos SyW",
+  "short_name": "Chanchito",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/piggy-bank.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

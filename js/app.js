@@ -220,7 +220,7 @@ function escucharDatosEnVivo() {
             const nombreMeta = metaObj ? metaObj.titulo : 'alcancía';
             
             reproducirSonidoMoneda();
-            mostrarToast(`🪙 ¡${ultimoMov.usuario} hizo un ${ultimoMov.tipo} de $${ultimoMov.monto.toLocaleString()} en "${nombreMeta}"!`);
+            mostrarToast(`🪙 ¡${ultimoMov.usuario} hizo un ${ultimoMov.tipo} de ₡${ultimoMov.monto.toLocaleString()} en "${nombreMeta}"!`);
         }
 
         snapshotMovsGlobal = movimientos;
@@ -237,8 +237,8 @@ function actualizarInterfazConDatos() {
     const selectPlan = document.getElementById('selectPlanActivo');
     if (metas.length === 0) {
         selectPlan.innerHTML = `<option value="">No hay metas creadas</option>`;
-        document.getElementById('txtSaldoMetaActiva').innerText = `$0.00`;
-        document.getElementById('txtMetaMonto').innerText = `$0`;
+        document.getElementById('txtSaldoMetaActiva').innerText = `₡0.00`;
+        document.getElementById('txtMetaMonto').innerText = `₡0`;
         document.getElementById('txtPorcentaje').innerText = `0%`;
         document.getElementById('barraProgreso').style.width = `0%`;
         document.getElementById('txtNombrePlanHistorial').innerText = `--`;
@@ -264,8 +264,8 @@ function actualizarInterfazConDatos() {
     let porcentaje = Math.min(Math.round((saldoActualMeta / metaActiva.metaMonto) * 100), 100);
     if (porcentaje < 0) porcentaje = 0;
 
-    document.getElementById('txtSaldoMetaActiva').innerText = `$${saldoActualMeta.toLocaleString()}`;
-    document.getElementById('txtMetaMonto').innerText = `$${metaActiva.metaMonto.toLocaleString()}`;
+    document.getElementById('txtSaldoMetaActiva').innerText = `₡${saldoActualMeta.toLocaleString()}`;
+    document.getElementById('txtMetaMonto').innerText = `₡${metaActiva.metaMonto.toLocaleString()}`;
     document.getElementById('txtPorcentaje').innerText = `${porcentaje}%`;
     document.getElementById('barraProgreso').style.width = `${porcentaje}%`;
     document.getElementById('txtNombrePlanHistorial').innerText = metaActiva.titulo;
@@ -290,7 +290,7 @@ function actualizarInterfazConDatos() {
                 </div>
             </div>
             <span class="text-sm font-extrabold ${m.tipo === 'deposito' ? 'text-emerald-400' : 'text-rose-400'}">
-                ${m.tipo === 'deposito' ? '+' : '-'}$${m.monto.toLocaleString()}
+                ${m.tipo === 'deposito' ? '+' : '-'}₡${m.monto.toLocaleString()}
             </span>
         </div>
     `).join('');
