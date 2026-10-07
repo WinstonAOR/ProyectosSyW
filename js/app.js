@@ -58,11 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.iniciarSesion = (nombre, avatar) => {
-    desbloquearAudioMovil(); 
     const sesion = { nombre, avatar };
     localStorage.setItem("chanchito_sesion", JSON.stringify(sesion));
     verificarSesion();
-    verificarPermisoNotificaciones(); // <-- Añadir esto aquí
     mostrarToast(`¡Bienvenido de nuevo, ${nombre}! 🐷`);
 };
 
@@ -345,47 +343,3 @@ function inicializarPullToRefresh() {
         }
     });
 }
-
-// --- GESTIÓN DE PERMISOS DE NOTIFICACIÓN (ANDROID & IOS) ---
-function verificarPermisoNotificaciones() {
-    const btnNotif = document.getElementById('btnNotif');
-    if (!("Notification" in window)) {
-        if (btnNotif) btnNotif.classList.add('hidden');
-        return;
-    }
-
-    if (Notification.permission === "granted") {
-        if (btnNotif) btnNotif.classList.add('hidden'); // Ya están concedidas, ocultamos el botón
-    } else if (Notification.permission === "denied") {
-        if (btnNotif) btnNotif.classList.remove('hidden');
-    } else {
-        // Si está en 'default', mostramos el botón para que el usuario en iOS pueda tocarlo manualmente
-        if (btnNotif) btnNotif.classList.remove('hidden');
-    }
-}
-
-window.solicitarPermisoNotificaciones = async () => {
-    if (!("Notification" in window)) {
-        mostrarToast("Este navegador no soporta notificaciones", "error");
-        return;
-    }
-
-    try {
-        const permiso = await Notification.requestPermission();
-        if (permiso === "granted") {
-            mostrarToast("¡Notificaciones activadas con éxito! 🔔");
-            document.getElementById('btnNotif').classList.add('hidden');
-            
-            // Prueba de notificación nativa del sistema
-            new Notification("Proyectos SyW 🐷", {
-                body: "¡Las alertas en tiempo real están listas en tu dispositivo!",
-                icon: "./img/ahorro.png"
-            });
-        } else {
-            mostrarToast("Permiso de notificaciones denegado. Habilítalas en los ajustes de tu navegador.", "error");
-        }
-    } catch (e) {
-        console.error("Error pidiendo permisos de notificación: ", e);
-        mostrarToast("No se pudieron activar las notificaciones", "error");
-    }
-};
