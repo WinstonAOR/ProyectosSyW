@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Archivo de Estilos Externo -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Enlace al Manifiesto de la PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#030712">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-4">
 
@@ -32,7 +35,6 @@
                 <span class="text-3xl bg-pink-500/10 p-3 rounded-xl group-hover:scale-110 transition-transform">👨‍💻</span>
                 <div class="text-left">
                     <h3 class="font-bold text-white text-lg">Winston</h3>
-                    <p class="text-xs text-slate-400">Analista de Programador II</p>
                 </div>
             </button>
 
@@ -40,7 +42,7 @@
                 <span class="text-3xl bg-pink-500/10 p-3 rounded-xl group-hover:scale-110 transition-transform">💖</span>
                 <div class="text-left">
                     <h3 class="font-bold text-white text-lg">Susan</h3>
-                    <p class="text-xs text-slate-400">Co-ahorradora oficial</p>
+                    <p class="text-xs text-slate-400">Princesa hermosa</p>
                 </div>
             </button>
         </div>
@@ -101,11 +103,11 @@
                 <!-- Saldo y Progreso de la Meta Activa -->
                 <div>
                     <p class="text-pink-100 text-xs font-semibold uppercase tracking-wider">Ahorro en este Plan</p>
-                    <h2 id="txtSaldoMetaActiva" class="text-4xl font-black text-white mt-1 mb-3">$0.00</h2>
+                    <h2 id="txtSaldoMetaActiva" class="text-4xl font-black text-white mt-1 mb-3">₡0.00</h2>
                     
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs font-medium text-pink-100">
-                            <span>Meta Objetivo: <strong id="txtMetaMonto">$0</strong></span>
+                            <span>Meta Objetivo: <strong id="txtMetaMonto">₡0</strong></span>
                             <span id="txtPorcentaje">0%</span>
                         </div>
                         <div class="w-full bg-black/20 rounded-full h-3 overflow-hidden p-0.5">
@@ -145,7 +147,7 @@
                 <p id="txtSubtituloModalMeta" class="text-xs text-pink-400 font-medium -mt-2">Plan: --</p>
                 <div class="space-y-3">
                     <div>
-                        <label class="text-xs text-slate-400 block mb-1">Monto ($)</label>
+                        <label class="text-xs text-slate-400 block mb-1">Monto (₡)</label>
                         <input type="number" id="inputMonto" placeholder="Ej. 15000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
                     </div>
                     <div>
@@ -170,7 +172,7 @@
                         <input type="text" id="inputTituloMeta" placeholder="Ej. Viaje a Japón 2027" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
                     </div>
                     <div>
-                        <label class="text-xs text-slate-400 block mb-1">Monto Objetivo ($)</label>
+                        <label class="text-xs text-slate-400 block mb-1">Monto Objetivo (₡)</label>
                         <input type="number" id="inputMontoMeta" placeholder="Ej. 1000000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-pink-500">
                     </div>
                 </div>
@@ -185,5 +187,14 @@
 
     <!-- Archivo JavaScript Externo (Módulo) -->
     <script type="module" src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log("Service Worker registrado con éxito"))
+                .catch(err => console.log("Error al registrar Service Worker: ", err));
+            });
+        }
+    </script>
 </body>
 </html>
