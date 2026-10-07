@@ -190,7 +190,6 @@ let snapshotMetasGlobal = [];
 let snapshotMovsGlobal = [];
 
 function escucharDatosEnVivo() {
-    // Escuchar Planes (Metas)
     onSnapshot(query(collection(db, "planes"), orderBy("creadoEn", "desc")), (snapshotPlan) => {
         let metas = [];
         snapshotPlan.forEach((doc) => {
@@ -202,20 +201,17 @@ function escucharDatosEnVivo() {
         if (metas.length > 0 && (!metaSeleccionadaId || !metas.some(m => m.id === metaSeleccionadaId))) {
             metaSeleccionadaId = metas[0].id;
         }
-
         actualizarInterfazConDatos();
     });
 
-    // Escuchar Movimientos
     onSnapshot(query(collection(db, "movimientos"), orderBy("fecha", "desc")), (snapshotMov) => {
         let movimientos = [];
         snapshotMov.forEach((doc) => {
             movimientos.push(doc.data());
         });
 
-        // Detectar si entró un movimiento NUEVO en tiempo real (excluyendo la carga inicial)
         if (!primeraCargaMovimientos && snapshotMovsGlobal.length > 0 && movimientos.length > snapshotMovsGlobal.length) {
-            const ultimoMov = movimientos[0]; // El más reciente
+            const ultimoMov = movimientos[0];
             const metaObj = cacheMetas.find(m => m.id === ultimoMov.metaId);
             const nombreMeta = metaObj ? metaObj.titulo : 'alcancía';
             
@@ -225,7 +221,6 @@ function escucharDatosEnVivo() {
 
         snapshotMovsGlobal = movimientos;
         primeraCargaMovimientos = false;
-
         actualizarInterfazConDatos();
     });
 }
@@ -237,7 +232,8 @@ function actualizarInterfazConDatos() {
     const selectPlan = document.getElementById('selectPlanActivo');
     if (metas.length === 0) {
         selectPlan.innerHTML = `<option value="">No hay metas creadas</option>`;
-        document.getElementById('txtSaldoMetaActiva').innerText = `₡0.00`;
+        document.getElementById('txtSaldoMetaActiva').innerText = `₡0`;
+        document.getElementById('txtRestanteMeta').innerText = `Faltan ₡0 para la meta`;
         document.getElementById('txtMetaMonto').innerText = `₡0`;
         document.getElementById('txtPorcentaje').innerText = `0%`;
         document.getElementById('barraProgreso').style.width = `0%`;
@@ -260,6 +256,17 @@ function actualizarInterfazConDatos() {
             saldoActualMeta += Number(m.monto) * factor;
         }
     });
+
+    // Cálculo del restante para la meta
+    let restante = metaActiva.metaMonto - saldoActualMeta;
+    const txtRestante = document.getElementById('txtRestanteMeta');
+    if (restante <= 0) {
+        txtRestante.innerHTML = `🎉 ¡Meta alcanzada o superada!`;
+        txtRestante.className = `text-xs text-emerald-300 font-bold mb-3`;
+    } else {
+        txtRestante.innerHTML = `Faltan <strong>₡${restante.toLocaleString()}</strong> para la meta`;
+        txtRestante.className = `text-xs text-pink-200 font-medium mb-3`;
+    }
 
     let porcentaje = Math.min(Math.round((saldoActualMeta / metaActiva.metaMonto) * 100), 100);
     if (porcentaje < 0) porcentaje = 0;
