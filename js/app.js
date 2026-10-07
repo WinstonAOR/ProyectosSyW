@@ -233,7 +233,7 @@ function actualizarInterfazConDatos() {
     if (metas.length === 0) {
         selectPlan.innerHTML = `<option value="">No hay metas creadas</option>`;
         document.getElementById('txtSaldoMetaActiva').innerText = `₡0`;
-        document.getElementById('txtRestanteMeta').innerText = `Faltan ₡0 para la meta`;
+        document.getElementById('txtRestanteMeta').innerText = `Faltan ₡0`;
         document.getElementById('txtMetaMonto').innerText = `₡0`;
         document.getElementById('txtPorcentaje').innerText = `0%`;
         document.getElementById('barraProgreso').style.width = `0%`;
@@ -264,7 +264,7 @@ function actualizarInterfazConDatos() {
         txtRestante.innerHTML = `🎉 ¡Meta alcanzada o superada!`;
         txtRestante.className = `text-xs text-emerald-300 font-bold mb-3`;
     } else {
-        txtRestante.innerHTML = `Faltan <strong>₡${restante.toLocaleString()}</strong> para la meta`;
+        txtRestante.innerHTML = `Faltan <strong>₡${restante.toLocaleString()}</strong>`;
         txtRestante.className = `text-xs text-pink-200 font-medium mb-3`;
     }
 
