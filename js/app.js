@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ⚠️ PEGA AQUÍ TUS CREDENCIALES DE FIREBASE
+// ⚠️ CREDENCIALES DE FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyAXcZGumE0WIbX0T34zTWM4wdC_SQ-ydW0",
     authDomain: "proyectosenparejasyw.firebaseapp.com",
@@ -15,9 +15,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let tipoActualModal = 'deposito';
+let modoModalMeta = 'crear'; // 'crear' o 'editar'
 let cacheMetas = [];
 let metaSeleccionadaId = null;
-let primeraCargaMovimientos = true; // Controla que no suene el audio al cargar la app por primera vez
+let primeraCargaMovimientos = true;
 
 // --- REPRODUCIR SONIDO DE MONEDA ---
 function reproducirSonidoMoneda() {
@@ -93,10 +94,29 @@ window.cambiarPlanActivo = (metaId) => {
     actualizarInterfazConDatos();
 };
 
-// --- MODALES Y ACCIONES ---
+// --- MODALES Y ACCIONES DE METAS ---
 window.abrirModalMeta = () => {
+    modoModalMeta = 'crear';
+    document.getElementById('tituloModalMeta').innerText = '✨ Crear Nueva Meta de Ahorro';
+    document.getElementById('btnGuardarMeta').innerText = 'Crear Meta';
     document.getElementById('inputTituloMeta').value = '';
     document.getElementById('inputMontoMeta').value = '';
+    document.getElementById('modalMeta').classList.remove('hidden');
+};
+
+window.abrirModalEditarMeta = () => {
+    if (!metaSeleccionadaId || cacheMetas.length === 0) {
+        mostrarToast('No hay ninguna meta seleccionada para editar', 'error');
+        return;
+    }
+    const metaActual = cacheMetas.find(m => m.id === metaSeleccionadaId);
+    if (!metaActual) return;
+
+    modoModalMeta = 'editar';
+    document.getElementById('tituloModalMeta').innerText = '✏️ Editar Meta de Ahorro';
+    document.getElementById('btnGuardarMeta').innerText = 'Guardar Cambios';
+    document.getElementById('inputTituloMeta').value = metaActual.titulo;
+    document.getElementById('inputMontoMeta').value = metaActual.metaMonto;
     document.getElementById('modalMeta').classList.remove('hidden');
 };
 
@@ -104,7 +124,7 @@ window.cerrarModalMeta = () => {
     document.getElementById('modalMeta').classList.add('hidden');
 };
 
-window.guardarNuevaMeta = async () => {
+window.guardarMeta = async () => {
     const titulo = document.getElementById('inputTituloMeta').value.trim();
     const metaMonto = Number(document.getElementById('inputMontoMeta').value);
 
@@ -114,19 +134,28 @@ window.guardarNuevaMeta = async () => {
     }
 
     try {
-        mostrarToast('Creando nueva meta...', 'info');
-        const docRef = await addDoc(collection(db, "planes"), {
-            titulo: titulo,
-            metaMonto: metaMonto,
-            activo: true,
-            creadoEn: new Date().toISOString()
-        });
-        metaSeleccionadaId = docRef.id;
+        if (modoModalMeta === 'crear') {
+            mostrarToast('Creando nueva meta...', 'info');
+            const docRef = await addDoc(collection(db, "planes"), {
+                titulo: titulo,
+                metaMonto: metaMonto,
+                activo: true,
+                creadoEn: new Date().toISOString()
+            });
+            metaSeleccionadaId = docRef.id;
+            mostrarToast('¡Meta creada con éxito! 🎉');
+        } else {
+            mostrarToast('Actualizando meta...', 'info');
+            await updateDoc(doc(db, "planes", metaSeleccionadaId), {
+                titulo: titulo,
+                metaMonto: metaMonto
+            });
+            mostrarToast('¡Meta actualizada con éxito! ✏️');
+        }
         cerrarModalMeta();
-        mostrarToast('¡Meta creada con éxito! 🎉');
     } catch (e) {
-        console.error("Error al crear meta: ", e);
-        mostrarToast('Error al guardar la meta en la nube', 'error');
+        console.error("Error al guardar/actualizar meta: ", e);
+        mostrarToast('Error al guardar los cambios en la nube', 'error');
     }
 };
 
@@ -257,7 +286,6 @@ function actualizarInterfazConDatos() {
         }
     });
 
-    // Cálculo del restante para la meta
     let restante = metaActiva.metaMonto - saldoActualMeta;
     const txtRestante = document.getElementById('txtRestanteMeta');
     if (restante <= 0) {
@@ -285,22 +313,37 @@ function actualizarInterfazConDatos() {
         return;
     }
 
-    contenedorMov.innerHTML = movimientosDelPlan.map(m => `
-        <div class="bg-slate-900 border border-slate-800/80 p-3.5 rounded-2xl flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${m.tipo === 'deposito' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
-                    ${m.tipo === 'deposito' ? '📥' : '📤'}
+    contenedorMov.innerHTML = movimientosDelPlan.map(m => {
+        // Formatear fecha y hora guardada
+        let fechaFormateada = '';
+        if (m.fecha) {
+            const fechaObj = new Date(m.fecha);
+            fechaFormateada = fechaObj.toLocaleString('es-CR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        return `
+            <div class="bg-slate-900 border border-slate-800/80 p-3.5 rounded-2xl flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${m.tipo === 'deposito' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
+                        ${m.tipo === 'deposito' ? '📥' : '📤'}
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-200">${m.motivo}</h4>
+                        <p class="text-[10px] text-slate-400">Por <span class="text-pink-400 font-semibold">${m.usuario}</span> ${fechaFormateada ? `• <span class="text-slate-500">${fechaFormateada}</span>` : ''}</p>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="text-xs font-bold text-slate-200">${m.motivo}</h4>
-                    <p class="text-[10px] text-slate-400">Por <span class="text-pink-400 font-semibold">${m.usuario}</span></p>
-                </div>
+                <span class="text-sm font-extrabold ${m.tipo === 'deposito' ? 'text-emerald-400' : 'text-rose-400'}">
+                    ${m.tipo === 'deposito' ? '+' : '-'}₡${m.monto.toLocaleString()}
+                </span>
             </div>
-            <span class="text-sm font-extrabold ${m.tipo === 'deposito' ? 'text-emerald-400' : 'text-rose-400'}">
-                ${m.tipo === 'deposito' ? '+' : '-'}₡${m.monto.toLocaleString()}
-            </span>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // --- PULL TO REFRESH ---
@@ -350,10 +393,9 @@ if ('serviceWorker' in navigator) {
             const nuevoWorker = reg.installing;
             nuevoWorker.addEventListener('statechange', () => {
                 if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Hay una nueva versión en GitHub Pages
                     mostrarToast("✨ ¡Nueva versión disponible! Actualizando...", "info");
                     setTimeout(() => {
-                        window.location.reload(); // Recarga automática limpia
+                        window.location.reload();
                     }, 1500);
                 }
             });

@@ -87,17 +87,22 @@
             <div class="bg-gradient-to-br from-pink-600 to-rose-700 p-6 rounded-3xl shadow-lg relative overflow-hidden space-y-4">
                 <div class="absolute -right-6 -bottom-6 text-8xl opacity-10">🐷</div>
                 
-                <!-- Selector de Plan Activo con Flecha Desplegable -->
-                <div class="flex justify-between items-center bg-black/20 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/10">
-                    <div class="flex items-center gap-2">
+                <!-- Selector de Plan Activo con Selector y Botones de Edición / Nueva Meta -->
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 bg-black/20 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/10">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
                         <span class="text-xs">🎯</span>
-                        <select id="selectPlanActivo" onchange="cambiarPlanActivo(this.value)" class="bg-transparent text-white font-bold text-xs outline-none cursor-pointer w-full">
+                        <select id="selectPlanActivo" onchange="cambiarPlanActivo(this.value)" class="bg-transparent text-white font-bold text-xs outline-none cursor-pointer w-full truncate">
                             <!-- Se llena dinámicamente -->
                         </select>
                     </div>
-                    <button onclick="abrirModalMeta()" class="bg-white/20 hover:bg-white/30 text-white p-1 rounded-xl text-[10px] font-bold px-2.5 transition-all">
-                        + Nueva Meta
-                    </button>
+                    <div class="flex items-center gap-1.5 justify-end">
+                        <button onclick="abrirModalEditarMeta()" class="bg-white/15 hover:bg-white/25 text-white p-1 rounded-xl text-[10px] font-bold px-2 transition-all">
+                            ✏️ Editar
+                        </button>
+                        <button onclick="abrirModalMeta()" class="bg-white/20 hover:bg-white/30 text-white p-1 rounded-xl text-[10px] font-bold px-2.5 transition-all">
+                            + Nueva Meta
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Saldo y Progreso de la Meta Activa -->
@@ -163,10 +168,10 @@
             </div>
         </div>
 
-        <!-- Modal para Crear Nueva Meta -->
+        <!-- Modal para Crear / Editar Meta -->
         <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
             <div class="bg-slate-900 w-full sm:max-w-sm rounded-t-[30px] sm:rounded-3xl p-6 border border-slate-800 space-y-4 animate-in fade-in slide-in-from-bottom duration-300">
-                <h3 class="text-lg font-bold text-white">✨ Crear Nueva Meta de Ahorro</h3>
+                <h3 id="tituloModalMeta" class="text-lg font-bold text-white">✨ Crear Nueva Meta de Ahorro</h3>
                 <div class="space-y-3">
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">Nombre de la Meta</label>
@@ -179,7 +184,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button onclick="cerrarModalMeta()" class="bg-slate-800 text-slate-300 font-bold py-3 rounded-xl hover:bg-slate-700 text-xs">Cancelar</button>
-                    <button onclick="guardarNuevaMeta()" class="bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-500 shadow-lg shadow-pink-900/40 text-xs">Crear Meta</button>
+                    <button onclick="guardarMeta()" id="btnGuardarMeta" class="bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-500 shadow-lg shadow-pink-900/40 text-xs">Guardar</button>
                 </div>
             </div>
         </div>
